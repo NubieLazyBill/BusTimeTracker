@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">BusTimeTracker</string>
+    <string name="app_name">Bus Tome Tracker</string>
+    <string name="delete">Удалить</string>
 </resources>
