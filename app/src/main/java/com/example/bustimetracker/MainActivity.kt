@@ -1,7 +1,9 @@
 package com.example.bustimetracker
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TimePicker
@@ -17,6 +19,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import android.os.Environment
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +32,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(
+                arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ),
+                123
+            )
+        }
 
         timePicker = findViewById(R.id.timePicker)
         saveButton = findViewById(R.id.saveButton)
@@ -106,13 +119,18 @@ class MainActivity : AppCompatActivity() {
             // Преобразуем в JSON
             val json = Gson().toJson(allEntries)
 
-            // Сохраняем в файл в доступном месте
-            val file = File(getExternalFilesDir(null), "bus_times_backup.txt")
+            // Сохраняем в ПУБЛИЧНУЮ папку Downloads
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file = File(downloadsDir, "bus_times_backup.txt")
+
             FileOutputStream(file).use { stream ->
                 stream.write(json.toByteArray())
             }
 
-            Toast.makeText(this, "Данные экспортированы в: ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            // Показываем путь к файлу
+            val message = "Данные экспортированы в:\n${file.absolutePath}\n\nФайл доступен в папке Загрузки"
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+
         } catch (e: Exception) {
             Toast.makeText(this, "Ошибка экспорта: ${e.message}", Toast.LENGTH_SHORT).show()
         }
@@ -120,7 +138,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun importData() {
         try {
-            val file = File(getExternalFilesDir(null), "bus_times_backup.txt")
+            // Ищем файл в ПУБЛИЧНОЙ папке Downloads
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file = File(downloadsDir, "bus_times_backup.txt")
+
             if (file.exists()) {
                 // Читаем файл
                 val json = FileInputStream(file).use { stream ->
@@ -143,7 +164,7 @@ class MainActivity : AppCompatActivity() {
 
                 Toast.makeText(this, "Данные импортированы (${data.size} записей)", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Файл backup не найден", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Файл backup не найден в папке Загрузки", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Ошибка импорта: ${e.message}", Toast.LENGTH_SHORT).show()
