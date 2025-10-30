@@ -17,7 +17,7 @@ Bus Time Tracker позволяет отслеживать время прибы
 ##  🚀 Установка и сборка
 
 Клонируйте репозиторий:
-git clone [URL репозитория]
+git clone https://github.com/NubieLazyBill/BusTimeTracker
 
 cd bustimetracker
 
